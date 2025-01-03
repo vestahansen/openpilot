@@ -48,7 +48,8 @@ FfmpegEncoder::~FfmpegEncoder() {
 }
 
 void FfmpegEncoder::encoder_open(const char* path) {
-  const AVCodec *codec = avcodec_find_encoder(AV_CODEC_ID_FFVHUFF);
+  const AVCodec *codec = avcodec_find_encoder(AV_CODEC_ID_H264);
+  assert(codec);
 
   this->codec_ctx = avcodec_alloc_context3(codec);
   assert(this->codec_ctx);
@@ -59,6 +60,19 @@ void FfmpegEncoder::encoder_open(const char* path) {
   int err = avcodec_open2(this->codec_ctx, codec, NULL);
   assert(err >= 0);
 
+  const AVBitStreamFilter *bsf = av_bsf_get_by_name("h264_mp4toannexb");
+  assert(bsf);
+
+  err = av_bsf_alloc(bsf, &bsf_ctx);
+  assert(err >= 0);
+
+  bsf_ctx->par_in = avcodec_parameters_alloc();
+  assert(bsf_ctx->par_in);
+
+  avcodec_parameters_from_context(bsf_ctx->par_in, this->codec_ctx);
+  err = av_bsf_init(bsf_ctx);
+  assert(err >= 0);
+
   is_open = true;
   segment_num++;
   counter = 0;
@@ -67,6 +81,7 @@ void FfmpegEncoder::encoder_open(const char* path) {
 void FfmpegEncoder::encoder_close() {
   if (!is_open) return;
 
+  av_bsf_free(&bsf_ctx);
   avcodec_free_context(&codec_ctx);
   is_open = false;
 }
@@ -134,14 +149,31 @@ int FfmpegEncoder::encode_frame(VisionBuf* buf, VisionIpcBufExtra *extra) {
       break;
     }
 
-    if (env_debug_encoder) {
-      printf("%20s got %8d bytes flags %8x idx %4d id %8d\n", encoder_info.publish_name, pkt.size, pkt.flags, counter, extra->frame_id);
+    AVPacket filtered_pkt;
+    av_init_packet(&filtered_pkt);
+    filtered_pkt.data = NULL;
+    filtered_pkt.size = 0;
+
+    err = av_bsf_send_packet(bsf_ctx, &pkt);
+    if (err < 0) {
+      LOGE("av_bsf_send_packet error %d", err);
+      ret = -1;
+      break;
     }
 
-    publisher_publish(this, segment_num, counter, *extra,
-      (pkt.flags & AV_PKT_FLAG_KEY) ? V4L2_BUF_FLAG_KEYFRAME : 0,
-      kj::arrayPtr<capnp::byte>(pkt.data, (size_t)0), // TODO: get the header
-      kj::arrayPtr<capnp::byte>(pkt.data, pkt.size));
+    while ((err = av_bsf_receive_packet(bsf_ctx, &filtered_pkt)) == 0) {
+      if (env_debug_encoder) {
+        printf("%20s got %8d bytes flags %8x idx %4d id %8d\n", encoder_info.publish_name, pkt.size, pkt.flags, counter, extra->frame_id);
+      }
+
+      publisher_publish(this, segment_num, counter, *extra,
+        (filtered_pkt.flags & AV_PKT_FLAG_KEY) ? V4L2_BUF_FLAG_KEYFRAME : 0,
+        kj::arrayPtr<capnp::byte>(filtered_pkt.data, (size_t)0), // TODO: get the header
+        kj::arrayPtr<capnp::byte>(filtered_pkt.data, filtered_pkt.size));
+
+      counter++;
+    }
+    av_packet_unref(&filtered_pkt);
 
     counter++;
   }

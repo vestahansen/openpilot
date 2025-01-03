@@ -7,6 +7,7 @@
 
 extern "C" {
 #include <libavcodec/avcodec.h>
+#include <libavcodec/bsf.h>
 #include <libavformat/avformat.h>
 #include <libavutil/imgutils.h>
 }
@@ -28,6 +29,7 @@ private:
   bool is_open = false;
 
   AVCodecContext *codec_ctx;
+  AVBSFContext *bsf_ctx;
   AVFrame *frame = NULL;
   std::vector<uint8_t> convert_buf;
   std::vector<uint8_t> downscale_buf;

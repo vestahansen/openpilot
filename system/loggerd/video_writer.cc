@@ -16,13 +16,14 @@ VideoWriter::VideoWriter(const char *path, const char *filename, bool remuxing, 
 
   LOGD("encoder_open %s remuxing:%d", this->vid_path.c_str(), this->remuxing);
   if (this->remuxing) {
-    bool raw = (codec == cereal::EncodeIndex::Type::BIG_BOX_LOSSLESS);
-    avformat_alloc_output_context2(&this->ofmt_ctx, NULL, raw ? "matroska" : NULL, this->vid_path.c_str());
+    // bool raw = (codec == cereal::EncodeIndex::Type::BIG_BOX_LOSSLESS);
+    // LOGE("raw? %s", raw ? "yes" : "no");
+    avformat_alloc_output_context2(&this->ofmt_ctx, NULL, NULL, this->vid_path.c_str());
     assert(this->ofmt_ctx);
 
     // set codec correctly. needed?
     assert(codec != cereal::EncodeIndex::Type::FULL_H_E_V_C);
-    const AVCodec *avcodec = avcodec_find_encoder(raw ? AV_CODEC_ID_FFVHUFF : AV_CODEC_ID_H264);
+    const AVCodec *avcodec = avcodec_find_encoder(AV_CODEC_ID_H264);
     assert(avcodec);
 
     this->codec_ctx = avcodec_alloc_context3(avcodec);
@@ -32,13 +33,13 @@ VideoWriter::VideoWriter(const char *path, const char *filename, bool remuxing, 
     this->codec_ctx->pix_fmt = AV_PIX_FMT_YUV420P;
     this->codec_ctx->time_base = (AVRational){ 1, fps };
 
-    if (codec == cereal::EncodeIndex::Type::BIG_BOX_LOSSLESS) {
-      // without this, there's just noise
-      int err = avcodec_open2(this->codec_ctx, avcodec, NULL);
-      assert(err >= 0);
-    }
+    // if (codec == cereal::EncodeIndex::Type::BIG_BOX_LOSSLESS) {
+    //   // without this, there's just noise
+    //   int err = avcodec_open2(this->codec_ctx, avcodec, NULL);
+    //   assert(err >= 0);
+    // }
 
-    this->out_stream = avformat_new_stream(this->ofmt_ctx, raw ? avcodec : NULL);
+    this->out_stream = avformat_new_stream(this->ofmt_ctx, NULL);
     assert(this->out_stream);
 
     int err = avio_open(&this->ofmt_ctx->pb, this->vid_path.c_str(), AVIO_FLAG_WRITE);
@@ -88,7 +89,7 @@ void VideoWriter::write(uint8_t *data, int len, long long timestamp, bool codecc
 
       // TODO: can use av_write_frame for non raw?
       int err = av_interleaved_write_frame(ofmt_ctx, &pkt);
-      if (err < 0) { LOGW("ts encoder write issue len: %d ts: %lld", len, timestamp); }
+      if (err < 0) { LOGW("ts encoder write issue len: %d ts: %lld err: %d", len, timestamp, err); }
 
       av_packet_unref(&pkt);
     }
