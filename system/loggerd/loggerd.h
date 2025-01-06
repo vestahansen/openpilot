@@ -99,9 +99,10 @@ const EncoderInfo stream_driver_encoder_info = {
 };
 
 inline const char* generate_publish_name(const char* name) {
-  static std::string result;  // Static variable to persist for the lifetime of the program
+  static std::string result;
   result = std::string(1, std::tolower(name[0])) + std::string(name).substr(1) + "EncodeData";
-  return result.c_str();  // This is safe because 'result' is static
+  printf("publish_name: %s\n", result.c_str());
+  return result.c_str();
 }
 
 #define DEFINE_ENCODER_INFO(filename_prefix, encoder_bitrate, width, height, encode_func) \
@@ -115,16 +116,26 @@ inline const char* generate_publish_name(const char* name) {
     INIT_ENCODE_FUNCTIONS(encode_func##Encode), \
   };
 
-// QCAM (526x330) original
+// QCAM (526x330) original @ 256kbps
+
 // OS04C10 (1344x760)
 // AR/OX (1928x1208)
 
 const int QCAM_BITRATE = 256000;
-const int HIGH_BITRATE = 1024 * 1024;
-const int VERY_HIGH_BITRATE = 2 * 1024 * 1024;
-const int EXTREME_BITRATE = 4 * 1024 * 1024;
+const int HIGH_BITRATE = 1024 * 1024;  // 8 MB per minute
+const int HIGHER_BITRATE = 1.25 * 1024 * 1024;  // 10 MB per minute
+const int VERY_HIGH_BITRATE = 2 * 1024 * 1024;  // 16 MB per minute
+const int EXTREME_BITRATE = 4 * 1024 * 1024;  // 32 MB per minute
 
-DEFINE_ENCODER_INFO(qcamera, 2 * 1024 * 1024, 1148, 720, QRoad)
+DEFINE_ENCODER_INFO(qcamera, HIGH_BITRATE, 1148, 720, QRoad)
+DEFINE_ENCODER_INFO(qcamera_boost, HIGHER_BITRATE, 1148, 720, Debug0)
+// DEFINE_ENCODER_INFO(qcamera_720_vh, VERY_HIGH_BITRATE, 1148, 720, Debug0)
+// DEFINE_ENCODER_INFO(qcamera_720_ex, EXTREME_BITRATE, 1148, 720, Debug1)
+// DEFINE_ENCODER_INFO(qcamera_902_vh, VERY_HIGH_BITRATE, 1440, 902, Debug2)
+// DEFINE_ENCODER_INFO(qcamera_902_ex, EXTREME_BITRATE, 1440, 902, Debug3)
+// DEFINE_ENCODER_INFO(qcamera_1208_ex, EXTREME_BITRATE, 1928, 1208, Debug4)
+// DEFINE_ENCODER_INFO(qcamera_1208, 2 * EXTREME_BITRATE, 1928, 1208, Debug5)
+
 // DEFINE_ENCODER_INFO("qcamera", QRoad, QCAM_BITRATE, 526, 330)
 // DEFINE_ENCODER_INFO("qcamera_330_1m", Debug0, HIGH_BITRATE, 526, 330)
 // DEFINE_ENCODER_INFO("qcamera_720_1m", Debug1, HIGH_BITRATE, 1148, 720)
@@ -138,6 +149,12 @@ const LogCameraInfo road_camera_info{
   .encoder_infos = {
     main_road_encoder_info,
     qcamera_encoder_info,
+    qcamera_boost_encoder_info,
+    // qcamera_720_vh_encoder_info,
+    // qcamera_720_ex_encoder_info,
+    // qcamera_902_vh_encoder_info,
+    // qcamera_902_ex_encoder_info,
+    // qcamera_1208_ex_encoder_info,
   },
 };
 
