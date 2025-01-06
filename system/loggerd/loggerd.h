@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vector>
+#include <string>
+#include <cctype>
 
 #include "cereal/messaging/messaging.h"
 #include "cereal/services.h"
@@ -15,7 +17,6 @@
 constexpr int MAIN_FPS = 20;
 const int MAIN_BITRATE = 1e7;
 const int LIVESTREAM_BITRATE = 1e6;
-const int QCAM_BITRATE = 256000;
 
 #define NO_CAMERA_PATIENCE 500  // fall back to time-based rotation if all cameras are dead
 
@@ -97,39 +98,52 @@ const EncoderInfo stream_driver_encoder_info = {
   INIT_ENCODE_FUNCTIONS(LivestreamDriverEncode),
 };
 
-#define DEFINE_ENCODER_INFO(name, publish, file, encoder_bitrate, width, height, func) \
-  const EncoderInfo name##_encoder_info = {                                   \
-    .publish_name = publish,                                                  \
-    .filename = file,                                                         \
-    .bitrate = encoder_bitrate,                                               \
-    .encode_type = cereal::EncodeIndex::Type::QCAMERA_H264,                   \
-    .frame_width = width,                                                     \
-    .frame_height = height,                                                   \
-    INIT_ENCODE_FUNCTIONS(func),                                              \
+inline const char* generate_publish_name(const char* name) {
+  static std::string result;  // Static variable to persist for the lifetime of the program
+  result = std::string(1, std::tolower(name[0])) + (name + 1) + "EncodeData";
+  return result.c_str();  // This is safe because 'result' is static
+}
+
+#define DEFINE_ENCODER_INFO(filename_prefix, encoder_bitrate, width, height, encode_func) \
+  const EncoderInfo filename_prefix##_encoder_info = { \
+    .filename = #filename_prefix ".ts", \
+    .bitrate = encoder_bitrate, \
+    .encode_type = cereal::EncodeIndex::Type::QCAMERA_H264, \
+    .frame_width = width, \
+    .frame_height = height, \
+    .publish_name = generate_publish_name(#encode_func), \
+    INIT_ENCODE_FUNCTIONS(encode_func##Encode), \
   };
 
 // QCAM (526x330) original
 // OS04C10 (1344x760)
 // AR/OX (1928x1208)
 
-DEFINE_ENCODER_INFO(qcam_330, "qRoadEncodeData", "qcamera.ts", QCAM_BITRATE, 526, 330, QRoadEncode)
-DEFINE_ENCODER_INFO(qcam_330_vh, "debug0EncodeData", "qcamera_330_vh.ts", 1024 * 1024, 526, 330, Debug0Encode)
-DEFINE_ENCODER_INFO(qcam_720_vh, "debug1EncodeData", "qcamera_720_vh.ts", 1024 * 1024, 1148, 720, Debug1Encode)
-DEFINE_ENCODER_INFO(qcam_902_vh, "debug2EncodeData", "qcamera_902_vh.ts", 1024 * 1024, 1440, 902, Debug2Encode)
-DEFINE_ENCODER_INFO(qcam_902_uh, "debug3EncodeData", "qcamera_902_uh.ts", 2 * 1024 * 1024, 1440, 902, Debug3Encode)
-DEFINE_ENCODER_INFO(qcam_902_e, "debug4EncodeData", "qcamera_902_e.ts", 4 * 1024 * 1024, 1440, 902, Debug4Encode)
+const int QCAM_BITRATE = 256000;
+const int HIGH_BITRATE = 1024 * 1024;
+const int VERY_HIGH_BITRATE = 2 * 1024 * 1024;
+const int EXTREME_BITRATE = 4 * 1024 * 1024;
+
+DEFINE_ENCODER_INFO(qcamera, QCAM_BITRATE, 526, 330, QRoad)
+DEFINE_ENCODER_INFO(qcamera_330_1m, 1024 * 1024, 526, 330, Debug0)
+// DEFINE_ENCODER_INFO("qcamera", QRoad, QCAM_BITRATE, 526, 330)
+// DEFINE_ENCODER_INFO("qcamera_330_1m", Debug0, HIGH_BITRATE, 526, 330)
+// DEFINE_ENCODER_INFO("qcamera_720_1m", Debug1, HIGH_BITRATE, 1148, 720)
+// DEFINE_ENCODER_INFO("qcamera_902_1m", Debug2, HIGH_BITRATE, 1440, 902)
+// DEFINE_ENCODER_INFO("qcamera_902_2m", Debug3, VERY_HIGH_BITRATE, 1440, 902)
+// DEFINE_ENCODER_INFO("qcamera_902_4m", Debug4, EXTREME_BITRATE, 1440, 902)
 
 const LogCameraInfo road_camera_info{
   .thread_name = "road_cam_encoder",
   .stream_type = VISION_STREAM_ROAD,
   .encoder_infos = {
     main_road_encoder_info,
-    qcam_330_encoder_info,
-    qcam_330_vh_encoder_info,
-    qcam_720_vh_encoder_info,
-    qcam_902_vh_encoder_info,
-    qcam_902_uh_encoder_info,
-    qcam_902_e_encoder_info,
+    qcamera_encoder_info,
+    qcamera_330_1m_encoder_info,
+    // qcam_720_vh_encoder_info,
+    // qcam_902_vh_encoder_info,
+    // qcam_902_uh_encoder_info,
+    // qcam_902_e_encoder_info,
   },
 };
 
