@@ -105,8 +105,8 @@ const EncoderInfo qcam_encoder_info = {
   // AR/OX (1928x1208)
   // OS04C10 (1344x760)
   // QCAM (526x330)
-  .frame_width = 1315,
-  .frame_height = 825,
+  .frame_width = 1205,
+  .frame_height = 755,
   INIT_ENCODE_FUNCTIONS(QRoadEncode),
 };
 
