@@ -100,7 +100,7 @@ const EncoderInfo stream_driver_encoder_info = {
 
 inline const char* generate_publish_name(const char* name) {
   static std::string result;  // Static variable to persist for the lifetime of the program
-  result = std::string(1, std::tolower(name[0])) + (name + 1) + "EncodeData";
+  result = std::string(1, std::tolower(name[0])) + std::string(name).substr(1) + "EncodeData";
   return result.c_str();  // This is safe because 'result' is static
 }
 
@@ -137,7 +137,7 @@ const LogCameraInfo road_camera_info{
   .stream_type = VISION_STREAM_ROAD,
   .encoder_infos = {
     main_road_encoder_info,
-    // qcamera_encoder_info,
+    qcamera_encoder_info,
   },
 };
 
