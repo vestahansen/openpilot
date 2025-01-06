@@ -97,79 +97,40 @@ const EncoderInfo stream_driver_encoder_info = {
   INIT_ENCODE_FUNCTIONS(LivestreamDriverEncode),
 };
 
-// original
-// AR/OX (1928x1208)
+#define DEFINE_ENCODER_INFO(name, publish, file, encoder_bitrate, width, height, func) \
+  const EncoderInfo name##_encoder_info = {                                   \
+    .publish_name = publish,                                                  \
+    .filename = file,                                                         \
+    .bitrate = encoder_bitrate,                                               \
+    .encode_type = cereal::EncodeIndex::Type::QCAMERA_H264,                   \
+    .frame_width = width,                                                     \
+    .frame_height = height,                                                   \
+    INIT_ENCODE_FUNCTIONS(func),                                              \
+  };
+
+// QCAM (526x330) original
 // OS04C10 (1344x760)
-// QCAM (526x330)
-const EncoderInfo qcam_330_encoder_info = {
-  .publish_name = "qRoadEncodeData",
-  .filename = "qcamera.ts",
-  .bitrate = QCAM_BITRATE,
-  .encode_type = cereal::EncodeIndex::Type::QCAMERA_H264,
-  .frame_width = 526,
-  .frame_height = 330,
-  INIT_ENCODE_FUNCTIONS(QRoadEncode),
-};
+// AR/OX (1928x1208)
 
-// very high bitrate
-const EncoderInfo qcam_330_vh_encoder_info = {
-  .publish_name = "debug0EncodeData",
-  .filename = "qcamera_330_vh.ts",
-  .bitrate = 1024 * 1024,
-  .encode_type = cereal::EncodeIndex::Type::QCAMERA_H264,
-  .frame_width = 526,
-  .frame_height = 330,
-  INIT_ENCODE_FUNCTIONS(Debug0Encode),
-};
-
-// very high bitrate, 720p
-const EncoderInfo qcam_720_vh_encoder_info = {
-  .publish_name = "debug1EncodeData",
-  .filename = "qcamera_720_vh.ts",
-  .bitrate = 1024 * 1024,
-  .encode_type = cereal::EncodeIndex::Type::QCAMERA_H264,
-  .frame_width = 1148,
-  .frame_height = 720,
-  INIT_ENCODE_FUNCTIONS(Debug1Encode),
-};
-
-// very high bitrate, 902p
-const EncoderInfo qcam_902_vh_encoder_info = {
-  .publish_name = "debug2EncodeData",
-  .filename = "qcamera_902_vh.ts",
-  .bitrate = 1024 * 1024,
-  .encode_type = cereal::EncodeIndex::Type::QCAMERA_H264,
-  .frame_width = 1440,
-  .frame_height = 902,
-  INIT_ENCODE_FUNCTIONS(Debug2Encode),
-};
-
-// ultra high bitrate, 902p
-const EncoderInfo qcam_902_uh_encoder_info = {
-  .publish_name = "debug3EncodeData",
-  .filename = "qcamera_902_uh.ts",
-  .bitrate = 2 * 1024 * 1024,
-  .encode_type = cereal::EncodeIndex::Type::QCAMERA_H264,
-  .frame_width = 1440,
-  .frame_height = 902,
-  INIT_ENCODE_FUNCTIONS(Debug3Encode),
-};
-
-// extreme bitrate, 902p
-const EncoderInfo qcam_902_e_encoder_info = {
-  .publish_name = "debug4EncodeData",
-  .filename = "qcamera_902_e.ts",
-  .bitrate = 4 * 1024 * 1024,
-  .encode_type = cereal::EncodeIndex::Type::QCAMERA_H264,
-  .frame_width = 1440,
-  .frame_height = 902,
-  INIT_ENCODE_FUNCTIONS(Debug4Encode),
-};
+DEFINE_ENCODER_INFO(qcam_330, "qRoadEncodeData", "qcamera.ts", QCAM_BITRATE, 526, 330, QRoadEncode)
+DEFINE_ENCODER_INFO(qcam_330_vh, "debug0EncodeData", "qcamera_330_vh.ts", 1024 * 1024, 526, 330, Debug0Encode)
+DEFINE_ENCODER_INFO(qcam_720_vh, "debug1EncodeData", "qcamera_720_vh.ts", 1024 * 1024, 1148, 720, Debug1Encode)
+DEFINE_ENCODER_INFO(qcam_902_vh, "debug2EncodeData", "qcamera_902_vh.ts", 1024 * 1024, 1440, 902, Debug2Encode)
+DEFINE_ENCODER_INFO(qcam_902_uh, "debug3EncodeData", "qcamera_902_uh.ts", 2 * 1024 * 1024, 1440, 902, Debug3Encode)
+DEFINE_ENCODER_INFO(qcam_902_e, "debug4EncodeData", "qcamera_902_e.ts", 4 * 1024 * 1024, 1440, 902, Debug4Encode)
 
 const LogCameraInfo road_camera_info{
   .thread_name = "road_cam_encoder",
   .stream_type = VISION_STREAM_ROAD,
-  .encoder_infos = {main_road_encoder_info, qcam_330_encoder_info, qcam_330_vh_encoder_info, qcam_720_vh_encoder_info, qcam_902_vh_encoder_info, qcam_902_uh_encoder_info, qcam_902_e_encoder_info},
+  .encoder_infos = {
+    main_road_encoder_info,
+    qcam_330_encoder_info,
+    qcam_330_vh_encoder_info,
+    qcam_720_vh_encoder_info,
+    qcam_902_vh_encoder_info,
+    qcam_902_uh_encoder_info,
+    qcam_902_e_encoder_info,
+  },
 };
 
 const LogCameraInfo wide_road_camera_info{
