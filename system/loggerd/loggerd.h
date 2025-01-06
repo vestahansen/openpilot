@@ -97,23 +97,79 @@ const EncoderInfo stream_driver_encoder_info = {
   INIT_ENCODE_FUNCTIONS(LivestreamDriverEncode),
 };
 
-const EncoderInfo qcam_encoder_info = {
+// original
+// AR/OX (1928x1208)
+// OS04C10 (1344x760)
+// QCAM (526x330)
+const EncoderInfo qcam_330_encoder_info = {
   .publish_name = "qRoadEncodeData",
   .filename = "qcamera.ts",
-  .bitrate = 1137010,
+  .bitrate = QCAM_BITRATE,
   .encode_type = cereal::EncodeIndex::Type::QCAMERA_H264,
-  // AR/OX (1928x1208)
-  // OS04C10 (1344x760)
-  // QCAM (526x330)
-  .frame_width = 1148,  // 1440
-  .frame_height = 720,  // 902
+  .frame_width = 526,
+  .frame_height = 330,
   INIT_ENCODE_FUNCTIONS(QRoadEncode),
+};
+
+// high bitrate
+const EncoderInfo qcam_h_330_encoder_info = {
+  .publish_name = "debug0EncodeData",
+  .filename = "qcamera_h_330.ts",
+  .bitrate = 2 * QCAM_BITRATE,
+  .encode_type = cereal::EncodeIndex::Type::QCAMERA_H264,
+  .frame_width = 526,
+  .frame_height = 330,
+  INIT_ENCODE_FUNCTIONS(Debug0Encode),
+};
+
+// very high bitrate
+const EncoderInfo qcam_vh_330_encoder_info = {
+  .publish_name = "debug1EncodeData",
+  .filename = "qcamera_vh_330.ts",
+  .bitrate = 4 * QCAM_BITRATE,
+  .encode_type = cereal::EncodeIndex::Type::QCAMERA_H264,
+  .frame_width = 526,
+  .frame_height = 330,
+  INIT_ENCODE_FUNCTIONS(Debug1Encode),
+};
+
+// very high bitrate, 720p
+const EncoderInfo qcam_vh_720_encoder_info = {
+  .publish_name = "debug2EncodeData",
+  .filename = "qcamera_vh_720.ts",
+  .bitrate = 4 * QCAM_BITRATE,
+  .encode_type = cereal::EncodeIndex::Type::QCAMERA_H264,
+  .frame_width = 1148,
+  .frame_height = 720,
+  INIT_ENCODE_FUNCTIONS(Debug2Encode),
+};
+
+// very high bitrate, 1440p
+const EncoderInfo qcam_vh_1440_encoder_info = {
+  .publish_name = "debug3EncodeData",
+  .filename = "qcamera_vh_1440.ts",
+  .bitrate = 4 * QCAM_BITRATE,
+  .encode_type = cereal::EncodeIndex::Type::QCAMERA_H264,
+  .frame_width = 1440,
+  .frame_height = 902,
+  INIT_ENCODE_FUNCTIONS(Debug3Encode),
+};
+
+// ultra high bitrate, 1440p
+const EncoderInfo qcam_uh_1440_encoder_info = {
+  .publish_name = "debug4EncodeData",
+  .filename = "qcamera_uh_1440.ts",
+  .bitrate = 8 * QCAM_BITRATE,
+  .encode_type = cereal::EncodeIndex::Type::QCAMERA_H264,
+  .frame_width = 1440,
+  .frame_height = 902,
+  INIT_ENCODE_FUNCTIONS(Debug4Encode),
 };
 
 const LogCameraInfo road_camera_info{
   .thread_name = "road_cam_encoder",
   .stream_type = VISION_STREAM_ROAD,
-  .encoder_infos = {main_road_encoder_info, qcam_encoder_info}
+  .encoder_infos = {main_road_encoder_info, qcam_330_encoder_info, qcam_h_330_encoder_info, qcam_vh_330_encoder_info, qcam_vh_720_encoder_info, qcam_vh_1440_encoder_info, qcam_uh_1440_encoder_info},
 };
 
 const LogCameraInfo wide_road_camera_info{

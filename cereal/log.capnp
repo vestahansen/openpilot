@@ -2515,6 +2515,12 @@ struct Event {
     livestreamWideRoadEncodeIdx @118 :EncodeIndex;
     livestreamDriverEncodeIdx @119 :EncodeIndex;
 
+    debug0EncodeIdx @141 :EncodeIndex;
+    debug1EncodeIdx @142 :EncodeIndex;
+    debug2EncodeIdx @143 :EncodeIndex;
+    debug3EncodeIdx @144 :EncodeIndex;
+    debug4EncodeIdx @145 :EncodeIndex;
+
     # microphone data
     microphone @103 :Microphone;
 
@@ -2547,11 +2553,11 @@ struct Event {
     driverEncodeData @87 :EncodeData;
     wideRoadEncodeData @88 :EncodeData;
     qRoadEncodeData @89 :EncodeData;
-    debugEncodeData0 @136 :EncodeData;
-    debugEncodeData1 @137 :EncodeData;
-    debugEncodeData2 @138 :EncodeData;
-    debugEncodeData3 @139 :EncodeData;
-    debugEncodeData4 @140 :EncodeData;
+    debug0EncodeData @136 :EncodeData;
+    debug1EncodeData @137 :EncodeData;
+    debug2EncodeData @138 :EncodeData;
+    debug3EncodeData @139 :EncodeData;
+    debug4EncodeData @140 :EncodeData;
     alertDebug @133 :DebugAlert;
 
     livestreamRoadEncodeData @120 :EncodeData;
