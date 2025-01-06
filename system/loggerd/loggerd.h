@@ -100,13 +100,13 @@ const EncoderInfo stream_driver_encoder_info = {
 const EncoderInfo qcam_encoder_info = {
   .publish_name = "qRoadEncodeData",
   .filename = "qcamera.ts",
-  .bitrate = 1024 * 1024,
+  .bitrate = 1137010,
   .encode_type = cereal::EncodeIndex::Type::QCAMERA_H264,
   // AR/OX (1928x1208)
   // OS04C10 (1344x760)
   // QCAM (526x330)
-  .frame_width = 1148,
-  .frame_height = 720,
+  .frame_width = 1148,  // 1440
+  .frame_height = 720,  // 902
   INIT_ENCODE_FUNCTIONS(QRoadEncode),
 };
 
