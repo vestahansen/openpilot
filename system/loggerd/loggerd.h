@@ -124,8 +124,7 @@ const int HIGH_BITRATE = 1024 * 1024;
 const int VERY_HIGH_BITRATE = 2 * 1024 * 1024;
 const int EXTREME_BITRATE = 4 * 1024 * 1024;
 
-DEFINE_ENCODER_INFO(qcamera, QCAM_BITRATE, 526, 330, QRoad)
-DEFINE_ENCODER_INFO(qcamera_330_1m, 1024 * 1024, 526, 330, Debug0)
+DEFINE_ENCODER_INFO(qcamera, 2 * 1024 * 1024, 1148, 720, QRoad)
 // DEFINE_ENCODER_INFO("qcamera", QRoad, QCAM_BITRATE, 526, 330)
 // DEFINE_ENCODER_INFO("qcamera_330_1m", Debug0, HIGH_BITRATE, 526, 330)
 // DEFINE_ENCODER_INFO("qcamera_720_1m", Debug1, HIGH_BITRATE, 1148, 720)
@@ -138,12 +137,7 @@ const LogCameraInfo road_camera_info{
   .stream_type = VISION_STREAM_ROAD,
   .encoder_infos = {
     main_road_encoder_info,
-    qcamera_encoder_info,
-    qcamera_330_1m_encoder_info,
-    // qcam_720_vh_encoder_info,
-    // qcam_902_vh_encoder_info,
-    // qcam_902_uh_encoder_info,
-    // qcam_902_e_encoder_info,
+    // qcamera_encoder_info,
   },
 };
 
