@@ -12,4 +12,4 @@ fi
 
 export STAGING_ROOT="/data/safe_staging"
 # export SKIP_FW_QUERY="1"
-# export FINGERPRINT="CUPRA_BORN_MK1"
+export FINGERPRINT="CUPRA_BORN_MK1"
