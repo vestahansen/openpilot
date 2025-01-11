@@ -2,12 +2,13 @@ import os
 import sys
 import json
 import signal
+from pathlib import Path
 from PyQt5.QtWidgets import QApplication
+from PyQt5.QtGui import QPixmap, QSurfaceFormat, QFont
+from PyQt5.QtXml import QDomDocument
 from PyQt5.QtCore import (
     QFile, QFileInfo, QDateTime, QIODevice, QObject, QDir, QSize,
     Qt, pyqtSignal, QFileSystemWatcher, QCoreApplication)
-from PyQt5.QtGui import QPixmap, QSurfaceFormat, QFont
-from PyQt5.QtXml import QDomDocument
 
 from openpilot.common.params import Params
 from openpilot.common.swaglog import cloudlog
@@ -32,7 +33,7 @@ def getDongleId():
         return None
 
 def getSupportedLanguages():
-    f = QFile(":/languages.json")
+    f = QFile(Path(__file__).parent.parent / "translations/languages.json")
     if f.open(QIODevice.ReadOnly | QIODevice.Text):
         val = f.readAll()
         f.close()

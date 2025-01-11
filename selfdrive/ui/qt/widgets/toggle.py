@@ -6,7 +6,7 @@ class Toggle(QAbstractButton):
     stateChanged = pyqtSignal(bool)
 
     def __init__(self, parent=None):
-        super(Toggle, self).__init__(parent)
+        super().__init__(parent)
         self._height = 80
         self._height_rect = 60
         self.on = False
@@ -14,10 +14,10 @@ class Toggle(QAbstractButton):
         self.immediateOffset = 0
         self.enabled = True
 
-        self._radius = self._height / 2
+        self._radius = self._height // 2
         self._offset_circle = self._radius
         self._y_circle = self._radius
-        self._y_rect = (self._height - self._height_rect) / 2
+        self._y_rect = (self._height - self._height_rect) // 2
 
         self.circleColor = QColor(0xffffff)  # placeholder
         self.green = QColor(0xffffff)        # placeholder
@@ -34,7 +34,7 @@ class Toggle(QAbstractButton):
         self._offset_circle = o
         self.update()
 
-    offset_circle = pyqtProperty(float, fget=get_offset_circle, fset=set_offset_circle)
+    offset_circle = pyqtProperty(int, fget=get_offset_circle, fset=set_offset_circle)
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -44,12 +44,12 @@ class Toggle(QAbstractButton):
         # Draw toggle background left
         painter.setBrush(self.green)
         left_rect = QRect(0, self._y_rect, self.offset_circle + self._radius, self._height_rect)
-        painter.drawRoundedRect(left_rect, self._height_rect / 2, self._height_rect / 2)
+        painter.drawRoundedRect(left_rect, self._height_rect // 2, self._height_rect // 2)
 
         # Draw toggle background right
         painter.setBrush(QColor(0x393939))
         right_rect = QRect(self.offset_circle - self._radius, self._y_rect, self.width() - (self.offset_circle - self._radius), self._height_rect)
-        painter.drawRoundedRect(right_rect, self._height_rect / 2, self._height_rect / 2)
+        painter.drawRoundedRect(right_rect, self._height_rect // 2, self._height_rect // 2)
 
         # Draw toggle circle
         painter.setBrush(self.circleColor)
@@ -78,9 +78,6 @@ class Toggle(QAbstractButton):
         self._anim.setDuration(self.animation_duration)
         self._anim.start()
         self.repaint()
-
-    def enterEvent(self, event):
-        super(Toggle, self).enterEvent(event)
 
     def getEnabled(self):
         return self.enabled

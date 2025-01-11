@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QFrame, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QSizePolicy, QButtonGroup, QStyleOption
-from PyQt5.QtGui import QPixmap, QPainter
 from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtGui import QPixmap, QPainter
+from PyQt5.QtWidgets import QWidget, QFrame, QLabel, QPushButton, QLayout, QVBoxLayout, QHBoxLayout, QSizePolicy, QButtonGroup, QStyleOption
 
 from openpilot.common.params import Params
 from openpilot.selfdrive.ui.qt.widgets.input import ConfirmationDialog
@@ -110,6 +110,18 @@ class AbstractControl(QFrame):
 
     def getDescription(self):
         return self.description.text()
+
+
+class LabelControl(AbstractControl):
+    def __init__(self, title, text='', desc='', parent=None):
+        super().__init__(title, desc, '', parent)
+        self.label = ElidedLabel()
+        self.label.setText(text)
+        self.label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        self.hlayout.addWidget(self.label)
+
+    def setText(self, text):
+        self.label.setText(text)
 
 
 class ButtonControl(AbstractControl):
@@ -238,7 +250,7 @@ class ButtonParamControl(AbstractControl):
             color: #33E4E4E4;
         }
         """
-        value = int(self.params.get(self.key))
+        value = int(self.params.get(self.key) or 0)
         self.button_group = QButtonGroup(self)
         self.button_group.setExclusive(True)
         for i, text in enumerate(button_texts):
@@ -263,8 +275,50 @@ class ButtonParamControl(AbstractControl):
         self.button_group.button(id).setChecked(True)
 
     def refresh(self):
-        value = int(self.params.get(self.key))
+        value = int(self.params.get(self.key) or 0)
         self.button_group.button(value).setChecked(True)
 
     def showEvent(self, event):
         self.refresh()
+
+
+class ListWidget(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.outer_layout = QVBoxLayout(self)
+        self.outer_layout.setContentsMargins(0, 0, 0, 0)
+        self.outer_layout.setSpacing(0)
+
+        self.inner_layout = QVBoxLayout()
+        self.inner_layout.setContentsMargins(0, 0, 0, 0)
+        self.inner_layout.setSpacing(25)  # default spacing is 25
+        self.outer_layout.addLayout(self.inner_layout)
+        self.outer_layout.addStretch(1)
+
+    def addItem(self, item):
+        if isinstance(item, QWidget):
+            self.inner_layout.addWidget(item)
+        elif isinstance(item, QLayout):
+            self.inner_layout.addLayout(item)
+        else:
+            raise TypeError("addItem accepts QWidget or QLayout")
+
+    def setSpacing(self, spacing):
+        self.inner_layout.setSpacing(spacing)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setPen(Qt.gray)
+        for i in range(self.inner_layout.count() - 1):
+            item = self.inner_layout.itemAt(i)
+            widget = item.widget()
+            if widget is None or widget.isVisible():
+                r = item.geometry()
+                bottom = r.bottom() + self.inner_layout.spacing() / 2
+                painter.drawLine(r.left() + 40, int(bottom), r.right() - 40, int(bottom))
+
+
+class LayoutWidget(QWidget):
+    def __init__(self, layout, parent=None):
+        super().__init__(parent)
+        self.setLayout(layout)

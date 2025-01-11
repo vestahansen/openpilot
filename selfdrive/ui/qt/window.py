@@ -4,8 +4,8 @@ from PyQt5.QtCore import QEvent, Qt
 
 from openpilot.selfdrive.ui.state import ASSET_PATH, device, uiState
 from openpilot.selfdrive.ui.qt.home import HomeWindow
+from openpilot.selfdrive.ui.qt.offroad.settings import SettingsWindow
 # from openpilot.selfdrive.ui.qt.offroad.onboarding import OnboardingWindow
-# from openpilot.selfdrive.ui.qt.offroad.settings import SettingsWindow
 
 class MainWindow(QWidget):
     def __init__(self, parent=None):
@@ -19,10 +19,10 @@ class MainWindow(QWidget):
         self.homeWindow.openSettings.connect(self.openSettings)
         self.homeWindow.closeSettings.connect(self.closeSettings)
 
-        # self.settingsWindow = SettingsWindow(self)
-        # self.main_layout.addWidget(self.settingsWindow)
-        # self.settingsWindow.closeSettings.connect(self.closeSettings)
-        # self.settingsWindow.reviewTrainingGuide.connect(self.showTrainingGuide)
+        self.settingsWindow = SettingsWindow(self)
+        self.main_layout.addWidget(self.settingsWindow)
+        self.settingsWindow.closeSettings.connect(self.closeSettings)
+        self.settingsWindow.reviewTrainingGuide.connect(self.showTrainingGuide)
 
         # self.onboardingWindow = OnboardingWindow(self)
         # self.main_layout.addWidget(self.onboardingWindow)

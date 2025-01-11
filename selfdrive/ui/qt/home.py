@@ -187,10 +187,10 @@ class HomeWindow(QWidget):
         self.body = BodyWindow(self)
         self.slayout.addWidget(self.body)
 
-        # self.setAttribute(Qt.WA_NoSystemBackground)
-        # uiState().uiUpdate.connect(self.updateState)
-        # uiState().offroadTransition.connect(self.offroadTransition)
-        # uiState().offroadTransition.connect(self.sidebar.offroadTransition)
+        self.setAttribute(Qt.WA_NoSystemBackground)
+        uiState().uiUpdate.connect(self.updateState)
+        uiState().offroadTransition.connect(self.offroadTransition)
+        uiState().offroadTransition.connect(self.sidebar.offroadTransition)
 
     @pyqtSlot(bool)
     def showSidebar(self, show):
