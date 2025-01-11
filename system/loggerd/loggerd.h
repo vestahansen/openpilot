@@ -98,24 +98,6 @@ const EncoderInfo stream_driver_encoder_info = {
   INIT_ENCODE_FUNCTIONS(LivestreamDriverEncode),
 };
 
-inline const char* generate_publish_name(const char* name) {
-  static std::string result;
-  result = std::string(1, std::tolower(name[0])) + std::string(name).substr(1) + "EncodeData";
-  printf("publish_name: '%s'\n", result.c_str());
-  return result.c_str();
-}
-
-#define DEFINE_ENCODER_INFO(name, filename_, encoder_bitrate, codec, width, height, encode_func) \
-  const EncoderInfo name##_encoder_info = { \
-    .filename = #filename_, \
-    .bitrate = encoder_bitrate, \
-    .encode_type = codec, \
-    .frame_width = width, \
-    .frame_height = height, \
-    .publish_name = generate_publish_name(#encode_func), \
-    INIT_ENCODE_FUNCTIONS(encode_func##Encode), \
-  };
-
 // QCAM (526x330) original @ 256kbps
 
 // OS04C10 (1344x760)
@@ -127,14 +109,62 @@ const int BITRATE_10MB = 1.25 * 1024 * 1024;  // 10 MB per minute
 const int BITRATE_16MB = 2 * 1024 * 1024;  // 16 MB per minute
 const int BITRATE_32MB = 4 * 1024 * 1024;  // 32 MB per minute
 
-DEFINE_ENCODER_INFO(qcamera, qcamera.ts, QCAM_BITRATE, cereal::EncodeIndex::Type::QCAMERA_H264, 526, 330, QRoad)
-DEFINE_ENCODER_INFO(qcamera_hevc, qcamera.hevc, QCAM_BITRATE, cereal::EncodeIndex::Type::FULL_H_E_V_C, 526, 330, Debug0)
+const EncoderInfo qcamera_encoder_info = { \
+  .filename = "qcamera.ts",
+  .bitrate = QCAM_BITRATE,
+  .encode_type = cereal::EncodeIndex::Type::QCAMERA_H264,
+  .frame_width = 526,
+  .frame_height = 330,
+  .publish_name = "qRoadEncodeData",
+  INIT_ENCODE_FUNCTIONS(QRoadEncode),
+};
 
-// DEFINE_ENCODER_INFO(qcamera_720_8, qcamera_720.ts, BITRATE_8MB, cereal::EncodeIndex::Type::QCAMERA_H264, 1148, 720, Debug1)
-// DEFINE_ENCODER_INFO(qcamera_720_8_hevc, qcamera_720.hevc, BITRATE_8MB, cereal::EncodeIndex::Type::FULL_H_E_V_C, 1148, 720, Debug2)
+const EncoderInfo qcamera_hevc_encoder_info = {
+  .filename = "qcamera.hevc",
+  .bitrate = QCAM_BITRATE,
+  .frame_width = 526,
+  .frame_height = 330,
+  .publish_name = "debug0EncodeData",
+  INIT_ENCODE_FUNCTIONS(Debug0Encode),
+};
 
-// DEFINE_ENCODER_INFO(qcamera_720_16, qcamera_720_vh.ts, BITRATE_16MB, cereal::EncodeIndex::Type::QCAMERA_H264, 1148, 720, Debug3)
-// DEFINE_ENCODER_INFO(qcamera_720_16_hevc, qcamera_720_vh.hevc, BITRATE_16MB, cereal::EncodeIndex::Type::FULL_H_E_V_C, 1148, 720, Debug4)
+const EncoderInfo qcamera_720_8mb_encoder_info = { \
+  .filename = "qcamera_720_8mb.ts",
+  .bitrate = BITRATE_8MB,
+  .encode_type = cereal::EncodeIndex::Type::QCAMERA_H264,
+  .frame_width = 1148,
+  .frame_height = 720,
+  .publish_name = "debug1EncodeData",
+  INIT_ENCODE_FUNCTIONS(Debug1Encode),
+};
+
+const EncoderInfo qcamera_720_8mb_hevc_encoder_info = {
+  .filename = "qcamera_720_8mb.hevc",
+  .bitrate = BITRATE_8MB,
+  .frame_width = 1148,
+  .frame_height = 720,
+  .publish_name = "debug2EncodeData",
+  INIT_ENCODE_FUNCTIONS(Debug2Encode),
+};
+
+const EncoderInfo qcamera_720_16mb_encoder_info = { \
+  .filename = "qcamera_720_16mb.ts",
+  .bitrate = BITRATE_16MB,
+  .encode_type = cereal::EncodeIndex::Type::QCAMERA_H264,
+  .frame_width = 1148,
+  .frame_height = 720,
+  .publish_name = "debug3EncodeData",
+  INIT_ENCODE_FUNCTIONS(Debug3Encode),
+};
+
+const EncoderInfo qcamera_720_16mb_hevc_encoder_info = {
+  .filename = "qcamera_720_16mb.hevc",
+  .bitrate = BITRATE_16MB,
+  .frame_width = 1148,
+  .frame_height = 720,
+  .publish_name = "debug4EncodeData",
+  INIT_ENCODE_FUNCTIONS(Debug4Encode),
+};
 
 // DEFINE_ENCODER_INFO(qcamera, BITRATE_8MB, 1148, 720, QRoad)
 // DEFINE_ENCODER_INFO(qcamera_boost, BITRATE_10MB, 1148, 720, Debug0)
@@ -152,10 +182,10 @@ const LogCameraInfo road_camera_info{
     main_road_encoder_info,
     qcamera_encoder_info,
     qcamera_hevc_encoder_info,
-    // qcamera_720_8_encoder_info,
-    // qcamera_720_8_hevc_encoder_info,
-    // qcamera_720_16_encoder_info,
-    // qcamera_720_16_hevc_encoder_info,
+    qcamera_720_8mb_encoder_info,
+    qcamera_720_8mb_hevc_encoder_info,
+    qcamera_720_16mb_encoder_info,
+    qcamera_720_16mb_hevc_encoder_info,
   },
 };
 
