@@ -101,7 +101,7 @@ const EncoderInfo stream_driver_encoder_info = {
 inline const char* generate_publish_name(const char* name) {
   static std::string result;
   result = std::string(1, std::tolower(name[0])) + std::string(name).substr(1) + "EncodeData";
-  printf("publish_name: %s\n", result.c_str());
+  printf("publish_name: '%s'\n", result.c_str());
   return result.c_str();
 }
 
