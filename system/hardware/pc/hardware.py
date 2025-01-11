@@ -59,6 +59,9 @@ class Pc(HardwareBase):
   def get_screen_brightness(self):
     return 0
 
+  def set_display_power(self, on):
+    pass
+
   def set_power_save(self, powersave_enabled):
     pass
 

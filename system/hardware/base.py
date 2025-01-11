@@ -139,6 +139,10 @@ class HardwareBase(ABC):
     pass
 
   @abstractmethod
+  def set_display_power(self, on):
+    pass
+
+  @abstractmethod
   def set_power_save(self, powersave_enabled):
     pass
 

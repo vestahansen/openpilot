@@ -358,6 +358,13 @@ class Tici(HardwareBase):
     except Exception:
       return 0
 
+  def set_display_power(self, on):
+    try:
+      with open("/sys/class/backlight/panel0-backlight/bl_power", "w") as f:
+        f.write("0" if on else "4")
+    except Exception:
+      pass
+
   def set_power_save(self, powersave_enabled):
     # amplifier, 100mW at idle
     if self.amplifier is not None:
