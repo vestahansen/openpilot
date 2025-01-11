@@ -6,7 +6,7 @@ VideoEncoder::VideoEncoder(const EncoderInfo &encoder_info, int in_width, int in
   out_width = encoder_info.frame_width > 0 ? encoder_info.frame_width : in_width;
   out_height = encoder_info.frame_height > 0 ? encoder_info.frame_height : in_height;
 
-
+  printf("encoder_info.publish_name: '%s'\n", encoder_info.publish_name);
   std::vector pubs = {encoder_info.publish_name};
   if (encoder_info.thumbnail_name != NULL) {
     pubs.push_back(encoder_info.thumbnail_name);
