@@ -105,11 +105,11 @@ inline const char* generate_publish_name(const char* name) {
   return result.c_str();
 }
 
-#define DEFINE_ENCODER_INFO(filename_prefix, encoder_bitrate, width, height, encode_func) \
-  const EncoderInfo filename_prefix##_encoder_info = { \
-    .filename = #filename_prefix ".ts", \
+#define DEFINE_ENCODER_INFO(name, filename_, encoder_bitrate, codec, width, height, encode_func) \
+  const EncoderInfo name##_encoder_info = { \
+    .filename = #filename_, \
     .bitrate = encoder_bitrate, \
-    .encode_type = cereal::EncodeIndex::Type::QCAMERA_H264, \
+    .encode_type = codec, \
     .frame_width = width, \
     .frame_height = height, \
     .publish_name = generate_publish_name(#encode_func), \
@@ -122,26 +122,28 @@ inline const char* generate_publish_name(const char* name) {
 // AR/OX (1928x1208)
 
 const int QCAM_BITRATE = 256000;
-const int HIGH_BITRATE = 1024 * 1024;  // 8 MB per minute
-const int HIGHER_BITRATE = 1.25 * 1024 * 1024;  // 10 MB per minute
-const int VERY_HIGH_BITRATE = 2 * 1024 * 1024;  // 16 MB per minute
-const int EXTREME_BITRATE = 4 * 1024 * 1024;  // 32 MB per minute
+const int BITRATE_8MB = 1024 * 1024;  // 8 MB per minute
+const int BITRATE_10MB = 1.25 * 1024 * 1024;  // 10 MB per minute
+const int BITRATE_16MB = 2 * 1024 * 1024;  // 16 MB per minute
+const int BITRATE_32MB = 4 * 1024 * 1024;  // 32 MB per minute
 
-DEFINE_ENCODER_INFO(qcamera, HIGH_BITRATE, 1148, 720, QRoad)
-DEFINE_ENCODER_INFO(qcamera_boost, HIGHER_BITRATE, 1148, 720, Debug0)
-// DEFINE_ENCODER_INFO(qcamera_720_vh, VERY_HIGH_BITRATE, 1148, 720, Debug0)
-// DEFINE_ENCODER_INFO(qcamera_720_ex, EXTREME_BITRATE, 1148, 720, Debug1)
-// DEFINE_ENCODER_INFO(qcamera_902_vh, VERY_HIGH_BITRATE, 1440, 902, Debug2)
-// DEFINE_ENCODER_INFO(qcamera_902_ex, EXTREME_BITRATE, 1440, 902, Debug3)
-// DEFINE_ENCODER_INFO(qcamera_1208_ex, EXTREME_BITRATE, 1928, 1208, Debug4)
-// DEFINE_ENCODER_INFO(qcamera_1208, 2 * EXTREME_BITRATE, 1928, 1208, Debug5)
+DEFINE_ENCODER_INFO(qcamera, qcamera.ts, QCAM_BITRATE, cereal::EncodeIndex::Type::QCAMERA_H264, 526, 330, QRoad)
+DEFINE_ENCODER_INFO(qcamera_hevc, qcamera.hevc, QCAM_BITRATE, cereal::EncodeIndex::Type::FULL_H_E_V_C, 526, 330, Debug0)
 
-// DEFINE_ENCODER_INFO("qcamera", QRoad, QCAM_BITRATE, 526, 330)
-// DEFINE_ENCODER_INFO("qcamera_330_1m", Debug0, HIGH_BITRATE, 526, 330)
-// DEFINE_ENCODER_INFO("qcamera_720_1m", Debug1, HIGH_BITRATE, 1148, 720)
-// DEFINE_ENCODER_INFO("qcamera_902_1m", Debug2, HIGH_BITRATE, 1440, 902)
-// DEFINE_ENCODER_INFO("qcamera_902_2m", Debug3, VERY_HIGH_BITRATE, 1440, 902)
-// DEFINE_ENCODER_INFO("qcamera_902_4m", Debug4, EXTREME_BITRATE, 1440, 902)
+DEFINE_ENCODER_INFO(qcamera_720_8, qcamera_720.ts, BITRATE_8MB, cereal::EncodeIndex::Type::QCAMERA_H264, 1148, 720, Debug1)
+DEFINE_ENCODER_INFO(qcamera_720_8_hevc, qcamera_720.hevc, BITRATE_8MB, cereal::EncodeIndex::Type::FULL_H_E_V_C, 1148, 720, Debug2)
+
+DEFINE_ENCODER_INFO(qcamera_720_16, qcamera_720_vh.ts, BITRATE_16MB, cereal::EncodeIndex::Type::QCAMERA_H264, 1148, 720, Debug3)
+DEFINE_ENCODER_INFO(qcamera_720_16_hevc, qcamera_720_vh.hevc, BITRATE_16MB, cereal::EncodeIndex::Type::FULL_H_E_V_C, 1148, 720, Debug4)
+
+// DEFINE_ENCODER_INFO(qcamera, BITRATE_8MB, 1148, 720, QRoad)
+// DEFINE_ENCODER_INFO(qcamera_boost, BITRATE_10MB, 1148, 720, Debug0)
+// DEFINE_ENCODER_INFO(qcamera_720_vh, BITRATE_16MB, 1148, 720, Debug0)
+// DEFINE_ENCODER_INFO(qcamera_720_ex, BITRATE_32MB, 1148, 720, Debug1)
+// DEFINE_ENCODER_INFO(qcamera_902_vh, BITRATE_16MB, 1440, 902, Debug2)
+// DEFINE_ENCODER_INFO(qcamera_902_ex, BITRATE_32MB, 1440, 902, Debug3)
+// DEFINE_ENCODER_INFO(qcamera_1208_ex, BITRATE_32MB, 1928, 1208, Debug4)
+// DEFINE_ENCODER_INFO(qcamera_1208, 2 * BITRATE_32MB, 1928, 1208, Debug5)
 
 const LogCameraInfo road_camera_info{
   .thread_name = "road_cam_encoder",
@@ -149,12 +151,11 @@ const LogCameraInfo road_camera_info{
   .encoder_infos = {
     main_road_encoder_info,
     qcamera_encoder_info,
-    qcamera_boost_encoder_info,
-    // qcamera_720_vh_encoder_info,
-    // qcamera_720_ex_encoder_info,
-    // qcamera_902_vh_encoder_info,
-    // qcamera_902_ex_encoder_info,
-    // qcamera_1208_ex_encoder_info,
+    qcamera_hevc_encoder_info,
+    qcamera_720_8_encoder_info,
+    qcamera_720_8_hevc_encoder_info,
+    qcamera_720_16_encoder_info,
+    qcamera_720_16_hevc_encoder_info,
   },
 };
 
