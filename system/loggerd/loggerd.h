@@ -130,11 +130,11 @@ const int BITRATE_32MB = 4 * 1024 * 1024;  // 32 MB per minute
 DEFINE_ENCODER_INFO(qcamera, qcamera.ts, QCAM_BITRATE, cereal::EncodeIndex::Type::QCAMERA_H264, 526, 330, QRoad)
 DEFINE_ENCODER_INFO(qcamera_hevc, qcamera.hevc, QCAM_BITRATE, cereal::EncodeIndex::Type::FULL_H_E_V_C, 526, 330, Debug0)
 
-DEFINE_ENCODER_INFO(qcamera_720_8, qcamera_720.ts, BITRATE_8MB, cereal::EncodeIndex::Type::QCAMERA_H264, 1148, 720, Debug1)
-DEFINE_ENCODER_INFO(qcamera_720_8_hevc, qcamera_720.hevc, BITRATE_8MB, cereal::EncodeIndex::Type::FULL_H_E_V_C, 1148, 720, Debug2)
+// DEFINE_ENCODER_INFO(qcamera_720_8, qcamera_720.ts, BITRATE_8MB, cereal::EncodeIndex::Type::QCAMERA_H264, 1148, 720, Debug1)
+// DEFINE_ENCODER_INFO(qcamera_720_8_hevc, qcamera_720.hevc, BITRATE_8MB, cereal::EncodeIndex::Type::FULL_H_E_V_C, 1148, 720, Debug2)
 
-DEFINE_ENCODER_INFO(qcamera_720_16, qcamera_720_vh.ts, BITRATE_16MB, cereal::EncodeIndex::Type::QCAMERA_H264, 1148, 720, Debug3)
-DEFINE_ENCODER_INFO(qcamera_720_16_hevc, qcamera_720_vh.hevc, BITRATE_16MB, cereal::EncodeIndex::Type::FULL_H_E_V_C, 1148, 720, Debug4)
+// DEFINE_ENCODER_INFO(qcamera_720_16, qcamera_720_vh.ts, BITRATE_16MB, cereal::EncodeIndex::Type::QCAMERA_H264, 1148, 720, Debug3)
+// DEFINE_ENCODER_INFO(qcamera_720_16_hevc, qcamera_720_vh.hevc, BITRATE_16MB, cereal::EncodeIndex::Type::FULL_H_E_V_C, 1148, 720, Debug4)
 
 // DEFINE_ENCODER_INFO(qcamera, BITRATE_8MB, 1148, 720, QRoad)
 // DEFINE_ENCODER_INFO(qcamera_boost, BITRATE_10MB, 1148, 720, Debug0)
@@ -152,10 +152,10 @@ const LogCameraInfo road_camera_info{
     main_road_encoder_info,
     qcamera_encoder_info,
     qcamera_hevc_encoder_info,
-    qcamera_720_8_encoder_info,
-    qcamera_720_8_hevc_encoder_info,
-    qcamera_720_16_encoder_info,
-    qcamera_720_16_hevc_encoder_info,
+    // qcamera_720_8_encoder_info,
+    // qcamera_720_8_hevc_encoder_info,
+    // qcamera_720_16_encoder_info,
+    // qcamera_720_16_hevc_encoder_info,
   },
 };
 
