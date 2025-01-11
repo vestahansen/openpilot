@@ -14,23 +14,23 @@ class DialogBase(QDialog):
 
         self.setStyleSheet("""
             * {
-              outline: none;
-              color: white;
-              font-family: Inter;
+                outline: none;
+                color: white;
+                font-family: Inter;
             }
             DialogBase {
-              background-color: black;
+                background-color: black;
             }
             QPushButton {
-              height: 160px;
-              font-size: 55px;
-              font-weight: 400;
-              border-radius: 10px;
-              color: white;
-              background-color: #333333;
+                height: 160px;
+                font-size: 55px;
+                font-weight: 400;
+                border-radius: 10px;
+                color: white;
+                background-color: #333333;
             }
             QPushButton:pressed {
-              background-color: #444444;
+                background-color: #444444;
             }
         """)
 
@@ -38,9 +38,6 @@ class DialogBase(QDialog):
         if obj == self.parent() and event.type() == QEvent.Hide:
             self.reject()
         return super().eventFilter(obj, event)
-
-    def exec_(self):
-        return super().exec_()
 
 
 class Keyboard(QWidget):
@@ -102,13 +99,13 @@ class InputDialog(DialogBase):
         cancel_btn.setFixedSize(386, 125)
         cancel_btn.setStyleSheet("""
             QPushButton {
-              font-size: 48px;
-              border-radius: 10px;
-              color: #E4E4E4;
-              background-color: #333333;
+                font-size: 48px;
+                border-radius: 10px;
+                color: #E4E4E4;
+                background-color: #333333;
             }
             QPushButton:pressed {
-              background-color: #444444;
+                background-color: #444444;
             }
         """)
         header_layout.addWidget(cancel_btn, alignment=Qt.AlignRight)
@@ -116,7 +113,6 @@ class InputDialog(DialogBase):
         cancel_btn.clicked.connect(self.cancel)
 
         self.main_layout.addLayout(header_layout)
-
         self.main_layout.addStretch(2)
 
         textbox_widget = QWidget()
@@ -126,16 +122,16 @@ class InputDialog(DialogBase):
 
         textbox_widget.setStyleSheet("""
             #textbox {
-              margin-left: 50px;
-              margin-right: 50px;
-              border-radius: 0;
-              border-bottom: 3px solid #BDBDBD;
+                margin-left: 50px;
+                margin-right: 50px;
+                border-radius: 0;
+                border-bottom: 3px solid #BDBDBD;
             }
             * {
-              border: none;
-              font-size: 80px;
-              font-weight: light;
-              background-color: transparent;
+                border: none;
+                font-size: 80px;
+                font-weight: light;
+                background-color: transparent;
             }
         """)
 

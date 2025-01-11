@@ -12,6 +12,8 @@ from openpilot.selfdrive.ui.qt.prime_state import PrimeState
 from openpilot.selfdrive.ui.qt.widgets.controls import ListWidget, ButtonControl, LabelControl, ParamControl, ButtonParamControl
 from openpilot.selfdrive.ui.qt.widgets.input import MultiOptionDialog, ConfirmationDialog
 from openpilot.selfdrive.ui.qt.widgets.scrollview import ScrollView
+from openpilot.selfdrive.ui.qt.offroad.software_settings import SoftwarePanel
+from openpilot.selfdrive.ui.qt.offroad.developer_panel import DeveloperPanel
 
 
 class SettingsWindow(QFrame):
@@ -20,7 +22,7 @@ class SettingsWindow(QFrame):
     expandToggleDescription = pyqtSignal(str)
 
     def __init__(self, parent=None):
-        super(SettingsWindow, self).__init__(parent)
+        super().__init__(parent)
         self.setObjectName("SettingsWindow")
 
         # setup two main layouts
@@ -120,7 +122,7 @@ class SettingsWindow(QFrame):
         """)
 
     def showEvent(self, event):
-        super(SettingsWindow, self).showEvent(event)
+        super().showEvent(event)
         self.setCurrentPanel(0)
 
     def setCurrentPanel(self, index, param=None):
@@ -138,7 +140,7 @@ class DevicePanel(ListWidget):
     reviewTrainingGuide = pyqtSignal()
 
     def __init__(self, parent=None):
-        super(DevicePanel, self).__init__(parent)
+        super().__init__(parent)
         self.params = Params()
         self.setSpacing(50)
         self.addItem(LabelControl(self.tr("Dongle ID"), self.params.get("DongleId", encoding='utf8') or self.tr("N/A")))
@@ -256,7 +258,7 @@ class DevicePanel(ListWidget):
 
 class TogglesPanel(ListWidget):
     def __init__(self, parent=None):
-        super(TogglesPanel, self).__init__(parent)
+        super().__init__(parent)
         self.params = Params()
         self.toggles = OrderedDict()
 
@@ -334,7 +336,7 @@ class TogglesPanel(ListWidget):
             self.toggles[param].showDescription()
 
     def showEvent(self, event):
-        super(TogglesPanel, self).showEvent(event)
+        super().showEvent(event)
         self.updateToggles()
 
     def updateToggles(self):
@@ -388,14 +390,6 @@ class TogglesPanel(ListWidget):
             if op_long_toggle:
                 op_long_toggle.setVisible(False)
 
-
-class SoftwarePanel(ListWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-class DeveloperPanel(ListWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
 
 class Networking(QWidget):
     def __init__(self, parent=None):

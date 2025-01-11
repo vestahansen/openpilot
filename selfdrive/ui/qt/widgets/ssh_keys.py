@@ -1,14 +1,24 @@
 from openpilot.common.params import Params
 from openpilot.selfdrive.ui.qt.api import HttpRequest
-from openpilot.selfdrive.ui.qt.widgets.controls import ButtonControl
-from openpilot.selfdrive.ui.qt.widgets.input import InputDialog
-from openpilot.selfdrive.ui.qt.widgets.helpers import ConfirmationDialog
+from openpilot.selfdrive.ui.qt.widgets.controls import ButtonControl, ToggleControl
+from openpilot.selfdrive.ui.qt.widgets.input import InputDialog, ConfirmationDialog
+
+
+class SshToggle(ToggleControl):
+    def __init__(self, parent):
+        self.params = Params()
+        super().__init__("Enable SSH", "", "", self.params.get_bool("SshEnabled"), parent=parent)
+        self.toggleFlipped.connect(self.onToggleFlipped)
+
+    def onToggleFlipped(self, state):
+        self.params.put_bool("SshEnabled", state)
+
 
 class SshControl(ButtonControl):
-    def __init__(self):
+    def __init__(self, parent):
         super().__init__("SSH Keys", "", ("Warning: This grants SSH access to all public keys in your GitHub settings. "
                                           "Never enter a GitHub username other than your own. A comma employee will NEVER "
-                                          "ask you to add their GitHub username."))
+                                          "ask you to add their GitHub username."), parent=parent)
 
         self.params = Params()
         self.clicked.connect(self.onClicked)
@@ -28,8 +38,8 @@ class SshControl(ButtonControl):
 
     def onClicked(self):
         if self.text() == "ADD":
-            username, ok = InputDialog.getText(self, "Enter your GitHub username")
-            if ok and username:
+            username = InputDialog.getText("Enter your GitHub username", self)
+            if username:
                 self.setText("LOADING")
                 self.setEnabled(False)
                 self.getUserKeys(username)
