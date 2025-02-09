@@ -119,7 +119,8 @@ void FindNewSignalsDlg::findNewSignals() {
         }
 
         double event_time = e->mono_time / 1e9 - first_time;
-        QString data_vec = QString::number(e->address) + QString(QByteArray::fromRawData(reinterpret_cast<const char*>(e->dat), e->size));
+        QString data_vec = QString::number(e->address) +
+                           QString(QByteArray::fromRawData(reinterpret_cast<const char*>(e->dat), e->size));
 
         // Check if the event is in the whitelist if whitelist is non-empty
         if (!whitelist.isEmpty() && !whitelist.contains(e->address)) {
@@ -135,13 +136,12 @@ void FindNewSignalsDlg::findNewSignals() {
             continue;
         } else if (event_time < target_time) {
             messages.insert(data_vec);
-        } else if (event_time < (target_time + 2) && messages.find(data_vec) == messages.end()) {
+        } else if (event_time < (target_time + 1.5) && messages.find(data_vec) == messages.end()) {
             address_counts[{e->address, e->src}]++;
             messages.insert(data_vec);
         }
     }
 
-    // Set up table for display
     table->clear();
     table->setRowCount(address_counts.size());
     table->setColumnCount(4);
@@ -151,10 +151,14 @@ void FindNewSignalsDlg::findNewSignals() {
     for (auto it = address_counts.constBegin(); it != address_counts.constEnd(); ++it, ++row) {
         uint32_t address = it.key().first;
         int bus = it.key().second;
-        table->setItem(row, 0, new QTableWidgetItem(msgName({0, address})));
+        int count = it.value();
+
+        table->setItem(row, 0, new QTableWidgetItem(msgName({static_cast<uint8_t>(bus), address})));
         table->setItem(row, 1, new QTableWidgetItem(QString::number(address, 16)));
         table->setItem(row, 2, new QTableWidgetItem(QString::number(bus)));
-        table->setItem(row, 3, new QTableWidgetItem(QString::number(it.value())));
+        QTableWidgetItem *countItem = new QTableWidgetItem();
+        countItem->setData(Qt::DisplayRole, count);
+        table->setItem(row, 3, countItem);
     }
 }
 
