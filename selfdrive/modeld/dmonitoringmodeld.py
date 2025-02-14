@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 import os
 from openpilot.system.hardware import TICI
-## TODO this is hack
 if TICI:
+  from tinygrad.tensor import Tensor
+  from tinygrad.dtype import dtypes
+  from openpilot.selfdrive.modeld.runners.tinygrad_helpers import qcom_tensor_from_opencl_address
   os.environ['QCOM'] = '1'
 else:
   from openpilot.selfdrive.modeld.runners.ort_helpers import make_onnx_cpu_runner
-import gc
 import math
 import time
 import pickle
@@ -19,14 +20,15 @@ from cereal import messaging
 from cereal.messaging import PubMaster, SubMaster
 from msgq.visionipc import VisionIpcClient, VisionStreamType, VisionBuf
 from openpilot.common.swaglog import cloudlog
-from openpilot.common.realtime import set_realtime_priority
-from openpilot.selfdrive.modeld.models.commonmodel_pyx import CLContext
+from openpilot.common.realtime import config_realtime_process
+from openpilot.common.transformations.model import dmonitoringmodel_intrinsics, DM_INPUT_SIZE
+from openpilot.common.transformations.camera import _ar_ox_fisheye, _os_fisheye
+from openpilot.selfdrive.modeld.models.commonmodel_pyx import CLContext, MonitoringModelFrame
 from openpilot.selfdrive.modeld.parse_model_outputs import sigmoid
-from tinygrad.tensor import Tensor
+from openpilot.system import sentry
 
+MODEL_WIDTH, MODEL_HEIGHT = DM_INPUT_SIZE
 CALIB_LEN = 3
-MODEL_WIDTH = 1440
-MODEL_HEIGHT = 960
 FEATURE_LEN = 512
 OUTPUT_SIZE = 84 + FEATURE_LEN
 
@@ -34,6 +36,7 @@ PROCESS_NAME = "selfdrive.modeld.dmonitoringmodeld"
 SEND_RAW_PRED = os.getenv('SEND_RAW_PRED')
 MODEL_PATH = Path(__file__).parent / 'models/dmonitoring_model.onnx'
 MODEL_PKL_PATH = Path(__file__).parent / 'models/dmonitoring_model_tinygrad.pkl'
+
 
 class DriverStateResult(ctypes.Structure):
   _fields_ = [
@@ -53,6 +56,7 @@ class DriverStateResult(ctypes.Structure):
     ("ready_prob", ctypes.c_float*4),
     ("not_ready_prob", ctypes.c_float*2)]
 
+
 class DMonitoringModelResult(ctypes.Structure):
   _fields_ = [
     ("driver_state_lhd", DriverStateResult),
@@ -61,32 +65,38 @@ class DMonitoringModelResult(ctypes.Structure):
     ("wheel_on_right_prob", ctypes.c_float),
     ("features", ctypes.c_float*FEATURE_LEN)]
 
+
 class ModelState:
   inputs: dict[str, np.ndarray]
   output: np.ndarray
 
   def __init__(self, cl_ctx):
     assert ctypes.sizeof(DMonitoringModelResult) == OUTPUT_SIZE * ctypes.sizeof(ctypes.c_float)
-    self.numpy_inputs = {'calib': np.zeros((1, CALIB_LEN), dtype=np.float32),
-                         'input_img': np.zeros((1,MODEL_HEIGHT * MODEL_WIDTH), dtype=np.uint8)}
-    self.tensor_inputs = {k: Tensor(v, device='NPY').realize() for k,v in self.numpy_inputs.items()}
 
+    self.frame = MonitoringModelFrame(cl_ctx)
+    self.numpy_inputs = {
+      'calib': np.zeros((1, CALIB_LEN), dtype=np.float32),
+    }
 
     if TICI:
+      self.tensor_inputs = {k: Tensor(v, device='NPY').realize() for k,v in self.numpy_inputs.items()}
       with open(MODEL_PKL_PATH, "rb") as f:
         self.model_run = pickle.load(f)
     else:
       self.onnx_cpu_runner = make_onnx_cpu_runner(MODEL_PATH)
 
-  def run(self, buf:VisionBuf, calib:np.ndarray) -> tuple[np.ndarray, float]:
+  def run(self, buf: VisionBuf, calib: np.ndarray, transform: np.ndarray) -> tuple[np.ndarray, float]:
     self.numpy_inputs['calib'][0,:] = calib
 
     t1 = time.perf_counter()
-    # TODO use opencl buffer directly to make tensor
-    v_offset = buf.height - MODEL_HEIGHT
-    h_offset = (buf.width - MODEL_WIDTH) // 2
-    buf_data = buf.data.reshape(-1, buf.stride)
-    self.numpy_inputs['input_img'][:] = buf_data[v_offset:v_offset+MODEL_HEIGHT, h_offset:h_offset+MODEL_WIDTH].reshape((1, -1))
+
+    input_img_cl = self.frame.prepare(buf, transform.flatten())
+    if TICI:
+      # The imgs tensors are backed by opencl memory, only need init once
+      if 'input_img' not in self.tensor_inputs:
+        self.tensor_inputs['input_img'] = qcom_tensor_from_opencl_address(input_img_cl.mem_address, (1, MODEL_WIDTH*MODEL_HEIGHT), dtype=dtypes.uint8)
+    else:
+      self.numpy_inputs['input_img'] = self.frame.buffer_from_cl(input_img_cl).reshape((1, MODEL_WIDTH*MODEL_HEIGHT))
 
     if TICI:
       output = self.model_run(**self.tensor_inputs).numpy().flatten()
@@ -112,6 +122,7 @@ def fill_driver_state(msg, ds_result: DriverStateResult):
   msg.readyProb = [float(sigmoid(x)) for x in ds_result.ready_prob]
   msg.notReadyProb = [float(sigmoid(x)) for x in ds_result.not_ready_prob]
 
+
 def get_driverstate_packet(model_output: np.ndarray, frame_id: int, location_ts: int, execution_time: float, gpu_execution_time: float):
   model_result = ctypes.cast(model_output.ctypes.data, ctypes.POINTER(DMonitoringModelResult)).contents
   msg = messaging.new_message('driverStateV2', valid=True)
@@ -128,9 +139,11 @@ def get_driverstate_packet(model_output: np.ndarray, frame_id: int, location_ts:
 
 
 def main():
-  gc.disable()
   setproctitle(PROCESS_NAME)
-  set_realtime_priority(1)
+  config_realtime_process([0, 1, 2, 3], 5)
+
+  sentry.set_tag("daemon", PROCESS_NAME)
+  cloudlog.bind(daemon=PROCESS_NAME)
 
   cl_context = CLContext()
   model = ModelState(cl_context)
@@ -147,22 +160,33 @@ def main():
   pm = PubMaster(["driverStateV2"])
 
   calib = np.zeros(CALIB_LEN, dtype=np.float32)
+  model_transform = None
 
   while True:
     buf = vipc_client.recv()
     if buf is None:
       continue
 
+    if model_transform is None:
+      cam = _os_fisheye if buf.width == _os_fisheye.width else _ar_ox_fisheye
+      model_transform = np.linalg.inv(np.dot(dmonitoringmodel_intrinsics, np.linalg.inv(cam.intrinsics))).astype(np.float32)
+
     sm.update(0)
     if sm.updated["liveCalibration"]:
       calib[:] = np.array(sm["liveCalibration"].rpyCalib)
 
     t1 = time.perf_counter()
-    model_output, gpu_execution_time = model.run(buf, calib)
+    model_output, gpu_execution_time = model.run(buf, calib, model_transform)
     t2 = time.perf_counter()
 
     pm.send("driverStateV2", get_driverstate_packet(model_output, vipc_client.frame_id, vipc_client.timestamp_sof, t2 - t1, gpu_execution_time))
 
 
 if __name__ == "__main__":
-  main()
+  try:
+    main()
+  except KeyboardInterrupt:
+    cloudlog.warning(f"child {PROCESS_NAME} got SIGINT")
+  except Exception:
+    sentry.capture_exception()
+    raise
