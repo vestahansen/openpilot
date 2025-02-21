@@ -35,7 +35,6 @@ class TestEncoder:
 
   def setup_method(self):
     self._clear_logs()
-    os.environ["LOGGERD_TEST"] = "1"
     os.environ["LOGGERD_SEGMENT_LENGTH"] = str(SEGMENT_LENGTH)
 
   def teardown_method(self):

@@ -24,8 +24,7 @@ const int QCAM_BITRATE = 256000;
   .set_encode_idx_func = &cereal::Event::Builder::set##encode_type##Idx,  \
   .init_encode_data_func = &cereal::Event::Builder::init##encode_type##Data
 
-const bool LOGGERD_TEST = getenv("LOGGERD_TEST");
-const int SEGMENT_LENGTH = LOGGERD_TEST ? atoi(getenv("LOGGERD_SEGMENT_LENGTH")) : 60;
+const int SEGMENT_LENGTH = getenv("LOGGERD_SEGMENT_LENGTH") ? atoi(getenv("LOGGERD_SEGMENT_LENGTH")) : 60;
 
 constexpr char PRESERVE_ATTR_NAME[] = "user.preserve";
 constexpr char PRESERVE_ATTR_VALUE = '1';

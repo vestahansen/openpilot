@@ -138,7 +138,6 @@ class TestLoggerd:
 
   @pytest.mark.skip("FIXME: encoderd sometimes crashes in CI when running with pytest-xdist")
   def test_rotation(self):
-    os.environ["LOGGERD_TEST"] = "1"
     Params().put("RecordFront", "1")
 
     d = DEVICE_CAMERAS[("tici", "ar0231")]

@@ -37,7 +37,7 @@ void rotate_if_needed(LoggerdState *s) {
   bool timed_out = false;
   double tms = millis_since_boot();
   double seg_length_secs = (tms - s->last_rotate_tms) / 1000.;
-  if ((seg_length_secs > SEGMENT_LENGTH) && !LOGGERD_TEST) {
+  if (seg_length_secs > SEGMENT_LENGTH) {
     // TODO: might be nice to put these reasons in the sentinel
     if ((tms - s->last_camera_seen_tms) > NO_CAMERA_PATIENCE) {
       timed_out = true;
