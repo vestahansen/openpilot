@@ -163,7 +163,7 @@ int handle_encoder_msg(LoggerdState *s, Message *msg, std::string &name, struct 
     // queue up all the new segment messages, they go in after the rotate
     re.q.push_back(msg);
   } else {
-    LOGE("%s: encoderd packet has a older segment!!! idx.getSegmentNum():%d s->logger.segment():%d re.encoderd_segment_offset:%d",
+    LOGE("%s: encoderd packet has an older segment! idx.getSegmentNum(): %d s->logger.segment(): %d re.encoderd_segment_offset: %d",
       name.c_str(), idx.getSegmentNum(), s->logger.segment(), re.encoderd_segment_offset);
     // free the message, it's useless. this should never happen
     // actually, this can happen if you restart encoderd
