@@ -66,7 +66,7 @@ class TestCamerad:
 
   def test_stress_test(self):
     os.environ['SPECTRA_STRESS_TEST'] = '1'
-    logs = run_and_log(["camerad", ], CAMERAS, 12)
+    logs = run_and_log(["camerad", ], CAMERAS, 15)
     ts = msgs_to_time_series(logs)
 
     for c in CAMERAS:
